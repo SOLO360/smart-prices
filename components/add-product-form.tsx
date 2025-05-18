@@ -28,16 +28,16 @@ export function AddProductForm() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const form = useForm<CreateProductSchema, any, CreateProductSchema>({
+  const form = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema),
     defaultValues: {
       category: '',
       service: '',
-      size: '', // Provide a default empty string for required fields
+      size: '',
       unitPrice: 0,
       bulkPrice: null,
-      turnaroundTime: '', // Provide a default empty string for required fields
-      notes: '', // Provide a default empty string for required fields
+      turnaroundTime: '',
+      notes: '',
     },
   });
 
