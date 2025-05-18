@@ -83,7 +83,7 @@ export function AddProductForm() {
                 <FormItem>
                   <FormLabel>Category *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Apparel" {...field} disabled={isPending} />
+            <Input placeholder="e.g., Apparel" {...field} disabled={isPending} className="border border-gray-300" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +96,7 @@ export function AddProductForm() {
                 <FormItem>
                   <FormLabel>Service *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., T-Shirt Printing" {...field} disabled={isPending} />
+                    <Input placeholder="e.g., T-Shirt Printing" {...field} disabled={isPending} className='border border-gray-300' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,7 +112,7 @@ export function AddProductForm() {
                 <FormItem>
                   <FormLabel>Size</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Large, 11oz" {...field} disabled={isPending} />
+                    <Input placeholder="e.g., Large, 11oz" {...field} disabled={isPending} className='border border-gray-300' />
                   </FormControl>
                   <FormDescription>Optional size designation.</FormDescription>
                   <FormMessage />
@@ -137,6 +137,7 @@ export function AddProductForm() {
                         field.onChange(value === '' ? 0 : parseFloat(value));
                       }}
                       disabled={isPending}
+                      className='border border-gray-300'
                     />
                   </FormControl>
                   <FormMessage />
@@ -161,6 +162,7 @@ export function AddProductForm() {
                         field.onChange(value === '' ? null : parseFloat(value));
                       }}
                       disabled={isPending}
+                      className='border border-gray-300'
                     />
                   </FormControl>
                   <FormDescription>Price for bulk orders.</FormDescription>
@@ -177,7 +179,7 @@ export function AddProductForm() {
               <FormItem>
                 <FormLabel>Turnaround Time</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., 3-5 business days" {...field} disabled={isPending} />
+                  <Input placeholder="e.g., 3-5 business days" {...field} disabled={isPending} className='border border-gray-300' />
                 </FormControl>
                 <FormDescription>Estimated production time.</FormDescription>
                 <FormMessage />
@@ -192,9 +194,9 @@ export function AddProductForm() {
               <FormItem>
                 <FormLabel>Notes</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Any additional details..." {...field} disabled={isPending} />
+                  <Textarea placeholder="Any additional details..." {...field} disabled={isPending}  className='border border-gray-300' />
                 </FormControl>
-                <FormDescription>Internal notes or customer-facing details.</FormDescription>
+                <FormDescription className='text-muted'>Internal notes or customer-facing details.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
