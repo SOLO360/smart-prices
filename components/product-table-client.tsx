@@ -126,6 +126,7 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
+          error
           type="search"
           placeholder="Search by category, service, or size..."
           value={searchTerm}

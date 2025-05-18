@@ -2,11 +2,16 @@
   "name": "smart-prices",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -16,6 +21,7 @@
     "@radix-ui/react-scroll-area": "^1.2.6",
     "@radix-ui/react-select": "^2.2.4",
     "@radix-ui/react-toast": "^1.2.11",
+    "@supabase/supabase-js": "^2.49.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.507.0",
@@ -39,6 +45,7 @@
     "postcss": "^8.5.3",
     "prisma": "^6.7.0",
     "tailwindcss": "^4.1.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
