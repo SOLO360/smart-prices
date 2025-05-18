@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const createProductSchema = z.object({
   category: z.string().min(1, { message: "Category is required" }),
   service: z.string().min(1, { message: "Service is required" }),
-  size: z.string().min(1, { message: "Size is required" }),
+  size: z.string().optional(),
   unitPrice: z.coerce
     .number({ invalid_type_error: "Unit price must be a number" })
     .positive({ message: "Unit price must be positive" }),
@@ -13,8 +13,8 @@ export const createProductSchema = z.object({
     .positive({ message: "Bulk price must be positive" })
     .nullable()
     .optional(),
-  turnaroundTime: z.string().min(1, { message: "Turnaround time is required" }),
-  notes: z.string().min(1, { message: "Notes are required" }),
+  turnaroundTime: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 // Schema for existing products (with ID)
