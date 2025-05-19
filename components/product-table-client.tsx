@@ -1,5 +1,7 @@
+// Client-side component for the product table
 "use client";
 
+// Import necessary types and components
 import type { Product } from '@/types/product';
 import React, { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
@@ -12,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,13 +26,17 @@ import {
 } from '@/components/ui/dialog';
 import EditProductForm from '@/components/edit-product-form'; // Adjust the path as needed
 
+// Number of items to display per page
 const ITEMS_PER_PAGE = 10;
 
+// Interface for component props
 interface ProductTableClientProps {
   initialProducts: Product[];
 }
 
+// Main product table component
 export function ProductTableClient({ initialProducts }: ProductTableClientProps) {
+  // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -39,16 +45,18 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Update products if initialProducts changes (e.g., due to revalidation)
+  // Handle data updates when initial products change
   useEffect(() => {
     setProducts(initialProducts);
     setCurrentPage(1); // Reset to first page when data changes
   }, [initialProducts]);
 
+  // Reset page when search term changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  // Filter products based on search term
   const filteredProducts = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     if (!lowerCaseSearchTerm) {
@@ -62,21 +70,25 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
     );
   }, [searchTerm, products]);
 
+  // Calculate total number of pages
   const totalPages = useMemo(() => {
     return Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   }, [filteredProducts.length]);
 
+  // Get products for current page
   const currentProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return filteredProducts.slice(startIndex, endIndex);
   }, [filteredProducts, currentPage]);
 
+  // Handle edit button click
   const handleEditClick = (product: Product) => {
     setEditingProduct(product);
     setIsEditDialogOpen(true);
   };
 
+  // Handle delete button click
   const handleDeleteClick = (productId: string) => {
     setDeletingProductId(productId);
     setIsDeleteDialogOpen(true);
@@ -126,14 +138,12 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          error
           type="search"
           placeholder="Search by category, service, or size..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-8 w-full md:w-1/3 border border-gray-300 border-2 focus: border-gray-900"
+          className="pl-8 w-full md:w-1/3 border border-gray-300 bg-muted/50 focus-visible:ring-[#17354D]"
           aria-label="Search products"
-          
         />
       </div>
       <ScrollArea className="whitespace-nowrap rounded-md border-none ">
@@ -169,9 +179,11 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
                   </TableCell>
                   <TableCell className="text-left m-4">
                     <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditClick(product)}>
+                      <Pencil className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(String(product.id))}>
+                      <Trash2 className="h-4 w-4 mr-2" />
                       Delete
                     </Button>
                   </TableCell>
@@ -207,22 +219,18 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
       {/* Edit Product Dialog */}
       <Dialog modal={true} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent
-          className="sm:max-w-[425px] modal"
+          className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[90%] sm:w-[80%] md:w-[60%] lg:w-[50%] max-w-[500px] p-6 bg-background rounded-lg shadow-lg border z-[9999]"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
+            <DialogTitle className="text-xl font-semibold mb-4">Edit Product</DialogTitle>
           </DialogHeader>
-          {/* Edit Product Form component will go here */}
           {editingProduct && (
             <EditProductForm
               product={editingProduct}
               onSuccess={onSuccess}
-              onCancel={() => {
-                // Close dialog manually if needed (using state or DialogClose)
-                // You could also use <DialogClose> inside the form footer
-              }}
+              onCancel={() => setIsEditDialogOpen(false)}
             />
           )}
         </DialogContent>
@@ -230,17 +238,18 @@ export function ProductTableClient({ initialProducts }: ProductTableClientProps)
 
       {/* Delete Product Dialog */}
       <Dialog modal={true} open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className='modal'
+        <DialogContent 
+          className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[90%] sm:w-[80%] md:w-[60%] lg:w-[50%] max-w-[400px] p-6 bg-background rounded-lg shadow-lg border z-[9999]"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-semibold mb-4">Confirm Deletion</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete this product? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-6 flex justify-end gap-3">
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
             <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
           </DialogFooter>

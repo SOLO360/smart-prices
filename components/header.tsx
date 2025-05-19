@@ -1,14 +1,19 @@
+// Client-side component for the application header
 "use client" 
  
+// Import necessary components and utilities
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PackagePlus, List, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
+// Main header component that provides navigation
 export function Header() {
+  // State for mobile menu visibility
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Toggle mobile menu visibility
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };

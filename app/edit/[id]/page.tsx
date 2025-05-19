@@ -1,12 +1,17 @@
+// Client-side component for editing products
 'use client';
 
+// Import necessary hooks and navigation utilities
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
+// Main edit product component
 export default function EditProduct() {
+  // Get URL parameters and router
   const { id } = useParams();
   const router = useRouter();
 
+  // State for product data
   const [product, setProduct] = useState({
     category: '',
     service: '',
@@ -17,6 +22,7 @@ export default function EditProduct() {
     notes: '',
   });
 
+  // Fetch product data when component mounts
   useEffect(() => {
     const fetchProduct = async () => {
       const res = await fetch(`/api/products/${id}`);
@@ -28,10 +34,12 @@ export default function EditProduct() {
     fetchProduct();
   }, [id]);
 
+  // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch(`/api/products/${id}`, {
@@ -40,6 +48,7 @@ export default function EditProduct() {
       body: JSON.stringify(product),
     });
     if (res.ok) {
+      // Redirect to home page on success
       router.push('/');
     }
   };

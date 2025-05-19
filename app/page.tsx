@@ -6,8 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ChevronRight, Package, PieChart, Tag } from 'lucide-react';
 
+// Fetches all products from the database, sorted by category
 async function getProducts(): Promise<Product[]> {
   try {
+    // Query Prisma to get all products, ordering them alphabetically by category
     const products = await prisma.product.findMany({
       orderBy: {
         category: 'asc',
@@ -15,28 +17,31 @@ async function getProducts(): Promise<Product[]> {
     });
     return products;
   } catch (error) {
+    // Log error and return empty array if fetching fails
     console.error("Failed to fetch products:", error);
     return [];
   }
 }
 
+// Fetches various statistics about the products
 async function getStats() {
   try {
-    // Get total products
+    // Count total number of products in the database
     const totalProducts = await prisma.product.count();
     
-    // Get total categories (unique)
+    // Group products by category to get unique category count
     const categories = await prisma.product.groupBy({
       by: ['category'],
     });
     
-    // Get average unit price
+    // Calculate average unit price across all products
     const priceStats = await prisma.product.aggregate({
       _avg: {
         unitPrice: true,
       },
     });
     
+    // Return statistics object with counts and averages
     return {
       totalProducts,
       totalCategories: categories.length,
@@ -52,7 +57,9 @@ async function getStats() {
   }
 }
 
+// Main home page component that displays product statistics and list
 export default async function HomePage() {
+  // Fetch products and statistics when page loads
   const initialProducts = await getProducts();
   const stats = await getStats();
 

@@ -6,10 +6,19 @@ import { z } from 'zod';
 import { productSchema } from '@/lib/schema';
 import { updateProductAction } from '@/actions/product-actions';
 import { Input } from './ui/input';
-import { Product } from '@/types/product'; // Adjust the path based on your project structure
+import { Product } from '@/types/product';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from './ui/form';
 
 interface EditProductFormProps {
   product: Product;
