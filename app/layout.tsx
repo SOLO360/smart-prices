@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/header';
 import { Toaster } from "@/components/ui/toaster";
 import { Footer } from '@/components/footer';
+import Navigation from './components/Navigation';
 
 // Configure Inter font for the application
 const inter = Inter({
@@ -15,8 +16,8 @@ const inter = Inter({
 
 // Define metadata for the application
 export const metadata: Metadata = {
-  title: 'Smart Prices',
-  description: 'Smart pricing management system',
+  title: 'PriceWise - Business Management',
+  description: 'Manage your business operations efficiently',
 };
 
 // Configure viewport settings for responsive design
@@ -46,7 +47,14 @@ export default function RootLayout({
         )}
       >
         {/* Header component for navigation */}
-        <Header />
+        <header className="border-b">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-bold">PriceWise</h1>
+              <Navigation />
+            </div>
+          </div>
+        </header>
         {/* Main content area with responsive padding and max width */}
         <main className="flex-1 container py-4 md:py-8 px-4 md:px-6 max-w-7xl mx-auto w-full">
           {children}

@@ -1,155 +1,240 @@
-import { Suspense } from 'react';
-import { prisma } from '@/lib/prisma';
-import type { Product } from '@/types/product';
-import { ProductTableClient } from '@/components/product-table-client';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ChevronRight, Package, PieChart, Tag } from 'lucide-react';
+'use client';
 
-// Fetches all products from the database, sorted by category
-async function getProducts(): Promise<Product[]> {
-  try {
-    // Query Prisma to get all products, ordering them alphabetically by category
-    const products = await prisma.product.findMany({
-      orderBy: {
-        category: 'asc',
-      },
-    });
-    return products;
-  } catch (error) {
-    // Log error and return empty array if fetching fails
-    console.error("Failed to fetch products:", error);
-    return [];
-  }
-}
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import CustomerForm from './components/CustomerForm';
+import SaleForm from './components/SaleForm';
+import ExpenseForm from './components/ExpenseForm';
 
-// Fetches various statistics about the products
-async function getStats() {
-  try {
-    // Count total number of products in the database
-    const totalProducts = await prisma.product.count();
-    
-    // Group products by category to get unique category count
-    const categories = await prisma.product.groupBy({
-      by: ['category'],
-    });
-    
-    // Calculate average unit price across all products
-    const priceStats = await prisma.product.aggregate({
-      _avg: {
-        unitPrice: true,
-      },
-    });
-    
-    // Return statistics object with counts and averages
-    return {
-      totalProducts,
-      totalCategories: categories.length,
-      averagePrice: priceStats._avg.unitPrice || 0,
+export default function Home() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [showSaleForm, setShowSaleForm] = useState(false);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    totalCustomers: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+  });
+
+  useEffect(() => {
+    // Fetch dashboard statistics
+    const fetchStats = async () => {
+      try {
+        const [salesRes, customersRes, expensesRes] = await Promise.all([
+          fetch('/api/sales'),
+          fetch('/api/customers'),
+          fetch('/api/expenses'),
+        ]);
+
+        if (!salesRes.ok || !customersRes.ok || !expensesRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const [sales, customers, expenses] = await Promise.all([
+          salesRes.json(),
+          customersRes.json(),
+          expensesRes.json(),
+        ]);
+
+        // Ensure we have arrays before using reduce
+        const totalSales = Array.isArray(sales) ? sales.reduce((sum: number, sale: any) => sum + sale.amount, 0) : 0;
+        const totalExpenses = Array.isArray(expenses) ? expenses.reduce((sum: number, expense: any) => sum + expense.amount, 0) : 0;
+
+        setStats({
+          totalSales,
+          totalCustomers: Array.isArray(customers) ? customers.length : 0,
+          totalExpenses,
+          netProfit: totalSales - totalExpenses,
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // Set default values when there's an error
+        setStats({
+          totalSales: 0,
+          totalCustomers: 0,
+          totalExpenses: 0,
+          netProfit: 0,
+        });
+      }
     };
-  } catch (error) {
-    console.error("Failed to fetch stats:", error);
-    return {
-      totalProducts: 0,
-      totalCategories: 0,
-      averagePrice: 0,
-    };
-  }
-}
 
-// Main home page component that displays product statistics and list
-export default async function HomePage() {
-  // Fetch products and statistics when page loads
-  const initialProducts = await getProducts();
-  const stats = await getStats();
+    fetchStats();
+  }, []);
+
+  const handleCustomerSubmit = async (data: any) => {
+    try {
+      await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      setShowCustomerForm(false);
+      // Refresh stats
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating customer:', error);
+    }
+  };
+
+  const handleSaleSubmit = async (data: any) => {
+    try {
+      await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      setShowSaleForm(false);
+      // Refresh stats
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating sale:', error);
+    }
+  };
+
+  const handleExpenseSubmit = async (data: any) => {
+    try {
+      await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      setShowExpenseForm(false);
+      // Refresh stats
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating expense:', error);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="flex items-center p-6">
-            <div className="bg-primary/10 p-3 rounded-full mr-4">
-              <Package className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Products</p>
-              <h3 className="text-2xl font-bold text-primary">{stats.totalProducts}</h3>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="flex items-center p-6">
-            <div className="bg-primary/10 p-3 rounded-full mr-4">
-              <Tag className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Categories</p>
-              <h3 className="text-2xl font-bold text-primary">{stats.totalCategories}</h3>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-shadow ">
-          <CardContent className="flex items-center p-6">
-            <div className="bg-primary/10 p-3 rounded-full mr-4">
-              <PieChart className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Average Price</p>
-              <h3 className="text-2xl font-bold text-primary">TZS {stats.averagePrice.toFixed(2)}</h3>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="container mx-auto p-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="sales">Sales</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+        </TabsList>
 
-      {/* Product List Section */}
-      <Card className="shadow-sm hover:shadow-md transition-shadow mt-4">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">Product Price List</CardTitle>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.totalSales.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalCustomers}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.netProfit.toFixed(2)}</div>
+              </CardContent>
+            </Card>
           </div>
-          <CardDescription>Browse and search through available products and services.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Suspense fallback={<ProductTableSkeleton />}>
-            <ProductTableClient initialProducts={initialProducts} />
-          </Suspense>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+        </TabsContent>
 
-// Loading Skeleton for the table
-function ProductTableSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-10 w-full md:w-1/3" /> {/* Search input skeleton */}
-      <div className="rounded-lg border border-b-gray-400">
-        <div className="divide-y divide-border">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex flex-col sm:flex-row sm:items-center p-4 space-y-2 sm:space-y-0 sm:space-x-4">
-              <Skeleton className="h-6 w-full sm:w-1/6" />
-              <Skeleton className="h-6 w-full sm:w-1/6" />
-              <Skeleton className="h-6 w-1/2 sm:w-1/6" />
-              <Skeleton className="h-6 w-1/4 sm:w-1/12" />
-              <Skeleton className="h-6 w-1/4 sm:w-1/12" />
-              <Skeleton className="h-6 w-1/2 sm:w-1/6" />
-              <Skeleton className="h-6 w-1/3 sm:w-1/6" />
+        <TabsContent value="customers">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Customers</h2>
+            <Button onClick={() => setShowCustomerForm(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Add Customer
+            </Button>
+          </div>
+          {showCustomerForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                <CustomerForm onSubmit={handleCustomerSubmit} />
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => setShowCustomerForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="sales">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Sales</h2>
+            <Button onClick={() => setShowSaleForm(true)}>
+              <Plus className="mr-2 h-4 w-4" /> New Sale
+            </Button>
+          </div>
+          {showSaleForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                <SaleForm onSubmit={handleSaleSubmit} />
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => setShowSaleForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="expenses">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Expenses</h2>
+            <Button onClick={() => setShowExpenseForm(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Add Expense
+            </Button>
+          </div>
+          {showExpenseForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                <ExpenseForm onSubmit={handleExpenseSubmit} />
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => setShowExpenseForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Reports</h2>
+            <Button>Generate Report</Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
-
-// Ensure Prisma disconnects when the app shuts down
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-});
-
-export const revalidate = 60; // Revalidate data every 60 seconds
