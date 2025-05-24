@@ -13,6 +13,7 @@ export async function GET() {
     });
     return NextResponse.json(sales);
   } catch (error) {
+    console.error('GET /api/sales error:', error);
     return NextResponse.json({ error: 'Error fetching sales' }, { status: 500 });
   }
 }
@@ -20,14 +21,33 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    
+    // Validate required fields
+    if (!body.customerId || !body.productId || !body.amount || !body.paymentMethod || !body.status) {
+      console.error('Missing required fields:', body);
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate numeric fields
+    if (isNaN(Number(body.amount))) {
+      console.error('Invalid amount:', body.amount);
+      return NextResponse.json(
+        { error: 'Invalid amount' },
+        { status: 400 }
+      );
+    }
+
     const sale = await prisma.sale.create({
       data: {
-        amount: body.amount,
+        amount: Number(body.amount),
         paymentMethod: body.paymentMethod,
         status: body.status,
-        customerId: body.customerId,
-        productId: body.productId,
-        notes: body.notes,
+        customerId: Number(body.customerId),
+        productId: Number(body.productId),
+        notes: body.notes || '',
       },
       include: {
         customer: true,
@@ -36,6 +56,10 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(sale);
   } catch (error) {
-    return NextResponse.json({ error: 'Error creating sale' }, { status: 500 });
+    console.error('POST /api/sales error:', error);
+    return NextResponse.json(
+      { error: 'Error creating sale', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 } 

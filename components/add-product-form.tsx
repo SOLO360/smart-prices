@@ -5,7 +5,7 @@
 import React, { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createProductSchema, type CreateProductSchema } from '../lib/schema';
+import { createProductSchema, type CreateProductSchema } from '../../smart-prices/lib/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,12 +21,17 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { addProductAction } from '@/actions/product-actions';
+import { addProductAction, updateProductAction } from '@/actions/product-actions';
 import { ErrorBoundary } from "react-error-boundary";
 import { SubmitHandler } from 'react-hook-form';
 
+interface AddProductFormProps {
+  onSuccess?: () => void;
+  initialData?: CreateProductSchema & { id: number };
+}
+
 // Main form component for adding new products
-export function AddProductForm() {
+export function AddProductForm({ onSuccess, initialData }: AddProductFormProps) {
   // State and hooks initialization
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -35,7 +40,7 @@ export function AddProductForm() {
   // Initialize form with validation schema and default values
   const form = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       category: '',
       service: '',
       size: '',
@@ -46,8 +51,8 @@ export function AddProductForm() {
     },
   });
 
-  // Interface for product addition result
-  interface AddProductResult {
+  // Interface for product operation result
+  interface ProductOperationResult {
     success: boolean;
     error?: string | null;
   }
@@ -55,23 +60,33 @@ export function AddProductForm() {
   // Handle form submission
   const onSubmit: SubmitHandler<CreateProductSchema> = async (values: CreateProductSchema) => {
     startTransition(async () => {
-      // Attempt to add product and handle result
-      const result: AddProductResult = await addProductAction(values);
+      let result: ProductOperationResult;
+
+      if (initialData) {
+        // Update existing product
+        result = await updateProductAction(initialData.id.toString(), values);
+      } else {
+        // Add new product
+        result = await addProductAction(values);
+      }
 
       if (result.success) {
         // Show success message and reset form
         toast({
           title: "Success!",
-          description: "Product added successfully.",
+          description: initialData ? "Product updated successfully." : "Product added successfully.",
           variant: "default",
         });
-        form.reset();
+        if (!initialData) {
+          form.reset();
+        }
         router.refresh(); // Refresh current route to see changes if on product list
+        onSuccess?.(); // Call onSuccess callback if provided
       } else {
         // Show error message
         toast({
           title: "Error",
-          description: result.error || "Failed to add product. Please try again.",
+          description: result.error || `Failed to ${initialData ? 'update' : 'add'} product. Please try again.`,
           variant: "destructive",
         });
       }
@@ -225,10 +240,10 @@ export function AddProductForm() {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Adding...
+                {initialData ? 'Updating...' : 'Adding...'}
               </>
             ) : (
-              'Add Product'
+              initialData ? 'Update Product' : 'Add Product'
             )}
           </Button>
         </form>
