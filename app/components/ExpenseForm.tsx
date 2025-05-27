@@ -35,9 +35,10 @@ type ExpenseFormData = z.infer<typeof expenseSchema>;
 
 interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => void;
+  onCancel?: () => void;
 }
 
-export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
+export default function ExpenseForm({ onSubmit, onCancel }: ExpenseFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
@@ -223,9 +224,17 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
 
           <div className="flex justify-end space-x-2">
             <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
               type="submit" 
               disabled={isPending}
-              className="bg-[#17354D] hover:bg-[#17354D]/90 text-white"
+              className="bg-[#17354D] hover:bg-[#122941] text-white"
             >
               {isPending ? (
                 <>

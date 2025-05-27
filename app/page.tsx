@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import Reports from './components/Reports';
 
 interface Customer {
   id: number;
@@ -275,50 +276,50 @@ export default function Home() {
           {isLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {[...Array(4)].map((_, index) => (
-                <Card key={index}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div key={index} className="card-style">
+                  <div className="card-header">
                     <Skeleton className="h-4 w-[100px]" />
-                  </CardHeader>
-                  <CardContent>
+                  </div>
+                  <div className="card-content">
                     <Skeleton className="h-8 w-[120px]" />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="card-style">
+                <div className="card-header">
                   <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="card-content">
                   <div className="text-2xl font-bold">{formatCurrency(stats.totalSales)}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                </div>
+              </div>
+              <div className="card-style">
+                <div className="card-header">
                   <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="card-content">
                   <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                </div>
+              </div>
+              <div className="card-style">
+                <div className="card-header">
                   <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="card-content">
                   <div className="text-2xl font-bold">{formatCurrency(stats.totalExpenses)}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                </div>
+              </div>
+              <div className="card-style">
+                <div className="card-header">
                   <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="card-content">
                   <div className="text-2xl font-bold">{formatCurrency(stats.netProfit)}</div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
         </TabsContent>
@@ -470,14 +471,14 @@ export default function Home() {
           {showCustomerForm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                <CustomerForm onSubmit={handleCustomerSubmit} />
-                <Button
-                  variant="outline"
-                  className="mt-4 w-full"
-                  onClick={() => setShowCustomerForm(false)}
-                >
-                  Cancel
-                </Button>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold">Add New Customer</h2>
+                  <p className="text-sm text-muted-foreground">Fill in the details for the new customer.</p>
+                </div>
+                <CustomerForm 
+                  onSubmit={handleCustomerSubmit} 
+                  onCancel={() => setShowCustomerForm(false)}
+                />
               </div>
             </div>
           )}
@@ -630,14 +631,14 @@ export default function Home() {
           {showSaleForm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                <SaleForm onSubmit={handleSaleSubmit} />
-                <Button
-                  variant="outline"
-                  className="mt-4 w-full"
-                  onClick={() => setShowSaleForm(false)}
-                >
-                  Cancel
-                </Button>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold">Record New Sale</h2>
+                  <p className="text-sm text-muted-foreground">Enter the details for the new sale transaction.</p>
+                </div>
+                <SaleForm 
+                  onSubmit={handleSaleSubmit} 
+                  onCancel={() => setShowSaleForm(false)}
+                />
               </div>
             </div>
           )}
@@ -796,24 +797,21 @@ export default function Home() {
           {showExpenseForm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                <ExpenseForm onSubmit={handleExpenseSubmit} />
-                <Button
-                  variant="outline"
-                  className="mt-4 w-full"
-                  onClick={() => setShowExpenseForm(false)}
-                >
-                  Cancel
-                </Button>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold">Add New Expense</h2>
+                  <p className="text-sm text-muted-foreground">Enter the details for the new expense.</p>
+                </div>
+                <ExpenseForm 
+                  onSubmit={handleExpenseSubmit} 
+                  onCancel={() => setShowExpenseForm(false)}
+                />
               </div>
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="reports">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Reports</h2>
-            <Button>Generate Report</Button>
-          </div>
+          <Reports />
         </TabsContent>
       </Tabs>
     </div>

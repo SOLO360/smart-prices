@@ -34,9 +34,10 @@ type CustomerFormData = z.infer<typeof customerSchema>;
 
 interface CustomerFormProps {
   onSubmit: (data: CustomerFormData) => void;
+  onCancel?: () => void;
 }
 
-export default function CustomerForm({ onSubmit }: CustomerFormProps) {
+export default function CustomerForm({ onSubmit, onCancel }: CustomerFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
@@ -207,9 +208,17 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
 
           <div className="flex justify-end space-x-2">
             <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
               type="submit" 
               disabled={isPending}
-              className="bg-[#17354D] hover:bg-[#17354D]/90 text-white"
+              className="bg-[#17354D] hover:bg-[#122941] text-white"
             >
               {isPending ? (
                 <>

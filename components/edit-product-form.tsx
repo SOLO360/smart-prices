@@ -10,6 +10,7 @@ import { Product } from '@/types/product';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -73,99 +74,156 @@ const EditProductForm: React.FC<EditProductFormProps> = ({
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      {/* Hidden input for product ID */}
-      <input type="hidden" {...form.register('id')} />
-      <input type="hidden" value={product.id} />
-      <div>
-        <label htmlFor="category">Category</label>
-        <Input id="category" {...form.register('category')} />
-        {form.formState.errors.category && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.category.message}
-          </p>
-        )}
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Basic product information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category *</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Apparel" {...field} disabled={form.formState.isSubmitting} className="border border-gray-300 focus-visible:ring-[#17354D]" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="service"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Service *</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., T-Shirt Printing" {...field} disabled={form.formState.isSubmitting} className="border border-gray-300 focus-visible:ring-[#17354D]" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-      <div>
-        <label htmlFor="service">Service</label>
-        <Input id="service" {...form.register('service')} />
-        {form.formState.errors.service && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.service.message}
-          </p>
-        )}
-      </div>
+        {/* Pricing and size information */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormField
+            control={form.control}
+            name="size"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Size</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Large, 11oz" {...field} disabled={form.formState.isSubmitting} className="border border-gray-300 focus-visible:ring-[#17354D]" />
+                </FormControl>
+                <FormDescription>Optional size designation.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="unitPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Unit Price ($) *</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 19.99"
+                    {...field}
+                    value={field.value === undefined ? '' : field.value}
+                    onChange={event => {
+                      const value = event.target.value;
+                      field.onChange(value === '' ? 0 : parseFloat(value));
+                    }}
+                    disabled={form.formState.isSubmitting}
+                    className="border border-gray-300 focus-visible:ring-[#17354D]"
+                  />
+                </FormControl>
+                <FormMessage className="text-[#F92D5E]" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="bulkPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bulk Price ($)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 15.99 (Optional)"
+                    {...field}
+                    value={field.value === null ? '' : field.value}
+                    onChange={event => {
+                      const value = event.target.value;
+                      field.onChange(value === '' ? null : parseFloat(value));
+                    }}
+                    disabled={form.formState.isSubmitting}
+                    className="border border-gray-300 focus-visible:ring-[#17354D]"
+                  />
+                </FormControl>
+                <FormDescription>Price for bulk orders.</FormDescription>
+                <FormMessage className="text-[#F92D5E]" />
+              </FormItem>
+            )}
+          />
+        </div>
 
-      <div>
-        <label htmlFor="size">Size</label>
-        <Input id="size" {...form.register('size')} />
-        {form.formState.errors.size && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.size.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="unitPrice">Unit Price</label>
-        <Input
-          id="unitPrice"
-          type="number"
-          step="0.01"
-          {...form.register('unitPrice', { valueAsNumber: true })}
+        {/* Additional details */}
+        <FormField
+          control={form.control}
+          name="turnaroundTime"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Turnaround Time</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 3-5 business days" {...field} disabled={form.formState.isSubmitting} className="border border-gray-300 focus-visible:ring-[#17354D]" />
+              </FormControl>
+              <FormDescription>Estimated production time.</FormDescription>
+              <FormMessage className="text-[#F92D5E]" />
+            </FormItem>
+          )}
         />
-        {form.formState.errors.unitPrice && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.unitPrice.message}
-          </p>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="bulkPrice">Bulk Price</label>
-        <Input
-          id="bulkPrice"
-          type="number"
-          step="0.01"
-          {...form.register('bulkPrice', { valueAsNumber: true })}
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Any additional details..." {...field} disabled={form.formState.isSubmitting} className="border border-gray-300 focus-visible:ring-[#17354D]" />
+              </FormControl>
+              <FormDescription className="text-muted">Internal notes or customer-facing details.</FormDescription>
+              <FormMessage className="text-[#F92D5E]" />
+            </FormItem>
+          )}
         />
-        {form.formState.errors.bulkPrice && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.bulkPrice.message}
-          </p>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="turnaroundTime">Turnaround Time</label>
-        <Input id="turnaroundTime" {...form.register('turnaroundTime')} />
-        {form.formState.errors.turnaroundTime && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.turnaroundTime.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="notes">Notes</label>
-        <Textarea id="notes" {...form.register('notes')} />
-        {form.formState.errors.notes && (
-          <p className="text-red-500 text-sm mt-1">
-            {form.formState.errors.notes.message}
-          </p>
-        )}
-      </div>
-
-      <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? 'Updating...' : 'Update Product'}
-        </Button>
-      </div>
-    </form>
+        {/* Submit button with loading state */}
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={form.formState.isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={form.formState.isSubmitting} className="bg-[#17354D] hover:bg-[#122941] text-white">
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              'Update Product'
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 
