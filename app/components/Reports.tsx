@@ -10,6 +10,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { formatCurrency } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RefreshCw } from 'lucide-react';
+import { Charts } from './Charts';
 
 interface ReportData {
   totalSales: number;
@@ -27,28 +28,34 @@ export default function Reports() {
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   });
-  const [reportType, setReportType] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchReportData();
-  }, [dateRange, reportType]);
+  }, [dateRange]);
 
   const fetchReportData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dateRange,
-          reportType,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       setReportData(data);
     } catch (error) {
       console.error('Error fetching report data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch report data');
     } finally {
       setIsLoading(false);
     }
@@ -58,61 +65,75 @@ export default function Reports() {
     <div className="space-y-6">
       <div className="card-style">
         <div className="card-header">
-          <div>
-            <h2 className="text-2xl font-bold">Business Reports</h2>
-            <p className="text-sm text-muted-foreground">View and analyze your business performance.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <DatePicker
-                date={dateRange.from}
-                onSelect={(date: Date) => setDateRange({ ...dateRange, from: date })}
-              />
-              <span className="text-muted-foreground">to</span>
-              <DatePicker
-                date={dateRange.to}
-                onSelect={(date: Date) => setDateRange({ ...dateRange, to: date })}
-              />
-            </div>
-            <Select value={reportType} onValueChange={setReportType}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select report type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="overview">Overview</SelectItem>
-                <SelectItem value="sales">Sales Analysis</SelectItem>
-                <SelectItem value="customers">Customer Analysis</SelectItem>
-                <SelectItem value="products">Product Analysis</SelectItem>
-                <SelectItem value="expenses">Expense Analysis</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={fetchReportData} variant="outline" size="icon">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
+          <h2 className="text-lg font-bold">Business Reports</h2>
+          <p className="text-sm text-gray-500">View and analyze your business performance</p>
         </div>
-
-        <div className="card-content">
-          {isLoading ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
+        <div className="card-content p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="flex items-center gap-2">
+                <DatePicker
+                  date={dateRange.from}
+                  onSelect={(date) => setDateRange({ ...dateRange, from: date })}
+                />
+                <span className="text-sm text-gray-500">to</span>
+                <DatePicker
+                  date={dateRange.to}
+                  onSelect={(date) => setDateRange({ ...dateRange, to: date })}
+                />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-[300px]" />
-                <Skeleton className="h-[300px]" />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={fetchReportData}
+                disabled={isLoading}
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="card-style">
+                    <div className="card-header">
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="card-content p-4">
+                      <Skeleton className="h-8 w-32" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="card-style">
+                    <div className="card-header">
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <div className="card-content p-4">
+                      <Skeleton className="h-48 w-full" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : reportData ? (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="card-style">
                   <div className="card-header">
                     <h3 className="text-base font-bold">Total Sales</h3>
                   </div>
-                  <div className="card-content">
+                  <div className="card-content p-4">
                     <p className="text-2xl font-bold">{formatCurrency(reportData.totalSales)}</p>
                   </div>
                 </div>
@@ -120,7 +141,7 @@ export default function Reports() {
                   <div className="card-header">
                     <h3 className="text-base font-bold">Total Expenses</h3>
                   </div>
-                  <div className="card-content">
+                  <div className="card-content p-4">
                     <p className="text-2xl font-bold">{formatCurrency(reportData.totalExpenses)}</p>
                   </div>
                 </div>
@@ -128,11 +149,18 @@ export default function Reports() {
                   <div className="card-header">
                     <h3 className="text-base font-bold">Net Profit</h3>
                   </div>
-                  <div className="card-content">
+                  <div className="card-content p-4">
                     <p className="text-2xl font-bold">{formatCurrency(reportData.netProfit)}</p>
                   </div>
                 </div>
               </div>
+
+              <Charts
+                salesByMonth={reportData.salesByMonth}
+                salesByCategory={reportData.salesByCategory}
+                topCustomers={reportData.topCustomers}
+                topProducts={reportData.topProducts}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="card-style">
@@ -163,40 +191,10 @@ export default function Reports() {
                   </div>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="card-style">
-                  <div className="card-header">
-                    <h3 className="text-base font-bold">Sales by Category</h3>
-                  </div>
-                  <div className="card-content divide-y">
-                    {reportData.salesByCategory.map((category, index) => (
-                      <div key={index} className="py-3 flex justify-between items-center">
-                        <span className="font-medium">{category.category}</span>
-                        <span className="font-medium">{formatCurrency(category.amount)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="card-style">
-                  <div className="card-header">
-                    <h3 className="text-base font-bold">Sales by Month</h3>
-                  </div>
-                  <div className="card-content divide-y">
-                    {reportData.salesByMonth.map((month, index) => (
-                      <div key={index} className="py-3 flex justify-between items-center">
-                        <span className="font-medium">{month.month}</span>
-                        <span className="font-medium">{formatCurrency(month.amount)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            </>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No data available</p>
+              <p className="text-gray-500">No data available</p>
             </div>
           )}
         </div>
