@@ -14,7 +14,7 @@ import {
   ArcElement,
   ChartOptions,
 } from 'chart.js';
-import { PDFReportButton } from './PDFReportButton';
+
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { formatCurrency } from '@/lib/utils';
 
@@ -37,6 +37,40 @@ interface ChartsProps {
   topCustomers: { name: string; totalSpent: number }[];
   topProducts: { name: string; totalSales: number }[];
 }
+
+interface RecentPurchase {
+  customer: string;
+  date: string;
+  amount: number;
+  status: 'paid' | 'pending' | 'failed';
+}
+
+const mockRecentPurchases: RecentPurchase[] = [
+  {
+    customer: 'John Smith',
+    date: '2025-05-30',
+    amount: 129.99,
+    status: 'paid'
+  },
+  {
+    customer: 'Sarah Johnson',
+    date: '2025-05-29',
+    amount: 89.99,
+    status: 'pending'
+  },
+  {
+    customer: 'Michael Brown',
+    date: '2025-05-28',
+    amount: 199.99,
+    status: 'paid'
+  },
+  {
+    customer: 'Emily Wilson',
+    date: '2025-05-27',
+    amount: 49.99,
+    status: 'failed'
+  }
+];
 
 export function Charts({ salesByMonth, salesByCategory, topCustomers, topProducts }: ChartsProps) {
   // Sales Trend Chart
@@ -161,16 +195,6 @@ export function Charts({ salesByMonth, salesByCategory, topCustomers, topProduct
 
   return (
     <div className="space-y-6">
-      {/* Download Report Button */}
-      <div className="flex justify-end mb-4">
-        <PDFReportButton
-          salesByMonth={salesByMonth}
-          salesByCategory={salesByCategory}
-          topCustomers={topCustomers}
-          topProducts={topProducts}
-        />
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="card-style">
           <div className="card-header">
@@ -192,6 +216,44 @@ export function Charts({ salesByMonth, salesByCategory, topCustomers, topProduct
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="card-style">
+          <div className="card-header">
+            <h3 className="text-base font-bold">Recent Purchases</h3>
+          </div>
+          <div className="card-content p-4">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Customer</th>
+                    <th className="text-left py-2">Date</th>
+                    <th className="text-left py-2">Amount</th>
+                    <th className="text-left py-2">Payment Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mockRecentPurchases.map((purchase: RecentPurchase, index: number) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
+                      <td className="py-2">{purchase.customer}</td>
+                      <td className="py-2">{new Date(purchase.date).toLocaleDateString()}</td>
+                      <td className="py-2">${purchase.amount.toFixed(2)}</td>
+                      <td className="py-2">
+                        <span className={`px-2 py-1 rounded-full text-sm ${
+                          purchase.status === 'paid' ? 'bg-green-100 text-green-800' :
+                          purchase.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {purchase.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <div className="card-style">
           <div className="card-header">
             <h3 className="text-base font-bold">Top Customers</h3>
