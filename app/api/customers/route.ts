@@ -3,14 +3,61 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
+
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Build where clause for search
+    const where = search ? {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { company: { contains: search, mode: 'insensitive' } },
+      ],
+    } : {};
+
+    // Get total count for pagination
+    const total = await prisma.customer.count({ where });
+
+    // Fetch customers with pagination and minimal includes
     const customers = await prisma.customer.findMany({
-      include: {
-        sales: true,
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        company: true,
+        category: true,
+        createdAt: true,
+        _count: {
+          select: {
+            sales: true,
+          },
+        },
       },
     });
-    return NextResponse.json(customers);
+
+    return NextResponse.json({
+      customers,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+        currentPage: page,
+        limit,
+      },
+    });
   } catch (error) {
     console.error('GET /api/customers error:', error);
     return NextResponse.json({ error: 'Error fetching customers' }, { status: 500 });

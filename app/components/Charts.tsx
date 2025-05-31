@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -42,37 +42,43 @@ interface RecentPurchase {
   customer: string;
   date: string;
   amount: number;
-  status: 'paid' | 'pending' | 'failed';
+  status: string;
 }
 
-const mockRecentPurchases: RecentPurchase[] = [
-  {
-    customer: 'John Smith',
-    date: '2025-05-30',
-    amount: 129.99,
-    status: 'paid'
-  },
-  {
-    customer: 'Sarah Johnson',
-    date: '2025-05-29',
-    amount: 89.99,
-    status: 'pending'
-  },
-  {
-    customer: 'Michael Brown',
-    date: '2025-05-28',
-    amount: 199.99,
-    status: 'paid'
-  },
-  {
-    customer: 'Emily Wilson',
-    date: '2025-05-27',
-    amount: 49.99,
-    status: 'failed'
-  }
-];
-
 export function Charts({ salesByMonth, salesByCategory, topCustomers, topProducts }: ChartsProps) {
+  const [recentPurchases, setRecentPurchases] = useState<RecentPurchase[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentPurchases = async () => {
+      try {
+        const response = await fetch('/api/sales');
+        if (!response.ok) {
+          throw new Error('Failed to fetch recent purchases');
+        }
+        const sales = await response.json();
+        
+        // Transform the sales data to match the RecentPurchase interface
+        const transformedPurchases = sales
+          .slice(0, 5) // Get only the 5 most recent purchases
+          .map((sale: any) => ({
+            customer: sale.customer.name,
+            date: sale.createdAt,
+            amount: sale.amount,
+            status: sale.status,
+          }));
+        
+        setRecentPurchases(transformedPurchases);
+      } catch (error) {
+        console.error('Error fetching recent purchases:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRecentPurchases();
+  }, []);
+
   // Sales Trend Chart
   const salesTrendData = {
     labels: salesByMonth.map(item => item.month),
@@ -232,22 +238,36 @@ export function Charts({ salesByMonth, salesByCategory, topCustomers, topProduct
                   </tr>
                 </thead>
                 <tbody>
-                  {mockRecentPurchases.map((purchase: RecentPurchase, index: number) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className="py-2">{purchase.customer}</td>
-                      <td className="py-2">{new Date(purchase.date).toLocaleDateString()}</td>
-                      <td className="py-2">${purchase.amount.toFixed(2)}</td>
-                      <td className="py-2">
-                        <span className={`px-2 py-1 rounded-full text-sm ${
-                          purchase.status === 'paid' ? 'bg-green-100 text-green-800' :
-                          purchase.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {purchase.status}
-                        </span>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4">
+                        Loading recent purchases...
                       </td>
                     </tr>
-                  ))}
+                  ) : recentPurchases.length > 0 ? (
+                    recentPurchases.map((purchase: RecentPurchase, index: number) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
+                        <td className="py-2">{purchase.customer}</td>
+                        <td className="py-2">{new Date(purchase.date).toLocaleDateString()}</td>
+                        <td className="py-2">${purchase.amount.toFixed(2)}</td>
+                        <td className="py-2">
+                          <span className={`px-2 py-1 rounded-full text-sm ${
+                            purchase.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                            purchase.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {purchase.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4">
+                        No recent purchases found
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
