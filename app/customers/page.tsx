@@ -22,16 +22,15 @@ interface Customer {
   id: number;
   name: string;
   email: string;
-  phone?: string;
-  company?: string;
-  address?: string;
+  phone: string;
+  company: string;
   category: string;
   createdAt: string;
-  updatedAt: string;
-  sales: any[];
   _count?: {
     sales: number;
   };
+  totalSales: number;
+  address?: string;
 }
 
 export default function CustomersPage() {
@@ -125,6 +124,8 @@ export default function CustomersPage() {
                   <TableHead>Company</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Orders</TableHead>
+                  <TableHead>Total Sales</TableHead>
+                  <TableHead>Address</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -154,23 +155,11 @@ export default function CustomersPage() {
                         {customer.name}
                       </TableCell>
                       <TableCell className="group-hover:text-primary">{customer.email}</TableCell>
-                      <TableCell className="group-hover:text-primary">{customer.company}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'group-hover:bg-primary/10',
-                            customer.category === 'Premium' && 'bg-purple-100 text-purple-700 hover:bg-purple-200',
-                            customer.category === 'Wholesale' && 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-                            customer.category === 'Subscriber' && 'bg-green-100 text-green-700 hover:bg-green-200'
-                          )}
-                        >
-                          {customer.category}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="group-hover:text-primary">
-                        {customer._count?.sales || 0}
-                      </TableCell>
+                      <TableCell>{customer.company || '-'}</TableCell>
+                      <TableCell>{customer.category}</TableCell>
+                      <TableCell>{customer._count?.sales || 0}</TableCell>
+                      <TableCell>${customer.totalSales.toFixed(2)}</TableCell>
+                      <TableCell className="max-w-xs truncate">{customer.address || '-'}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

@@ -46,13 +46,24 @@ export async function GET(request: Request) {
             sales: true,
           },
         },
+        sales: {
+          select: {
+            amount: true,
+          },
+        },
       },
     });
 
-    console.log('Found customers:', customers);
+    // Calculate total sales amount for each customer
+    const customersWithSales = customers.map(customer => ({
+      ...customer,
+      totalSales: customer.sales.reduce((sum, sale) => sum + (sale.amount || 0), 0),
+    }));
+
+    console.log('Found customers:', customersWithSales);
 
     return NextResponse.json({
-      customers,
+      customers: customersWithSales,
       pagination: {
         total,
         pages: Math.ceil(total / limit),

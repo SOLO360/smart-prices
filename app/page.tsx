@@ -345,6 +345,56 @@ export default function Home() {
 
           <div className="card-style">
             <div className="card-header">
+              <h2 className="card-title">Top Customers</h2>
+              <p className="card-description">Customers with the highest sales</p>
+            </div>
+            <div className="card-content">
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-[150px]" />
+                          <Skeleton className="h-4 w-[100px]" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-4 w-[100px]" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customers
+                    .sort((a, b) => (b._count?.sales || 0) - (a._count?.sales || 0))
+                    .slice(0, 5)
+                    .map((customer) => (
+                      <div key={customer.id} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-lg font-semibold text-primary">
+                              {customer.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium">{customer.name}</p>
+                            <p className="text-sm text-muted-foreground">{customer.email}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{formatCurrency(customer._count?.sales || 0)}</p>
+                          <p className="text-sm text-muted-foreground">{customer._count?.sales || 0} sales</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="card-style">
+            <div className="card-header">
               <h2 className="card-title">Customer List</h2>
               <p className="card-description">
                 Showing {startIndex + 1} to {Math.min(endIndex, filteredCustomers.length)} of {filteredCustomers.length} customers
