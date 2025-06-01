@@ -291,38 +291,38 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <div className="card-style">
-                <div className="card-header">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-                </div>
-                <div className="card-content">
+                </CardHeader>
+                <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(stats.totalSales)}</div>
-                </div>
-              </div>
-              <div className="card-style">
-                <div className="card-header">
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-                </div>
-                <div className="card-content">
+                </CardHeader>
+                <CardContent>
                   <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-                </div>
-              </div>
-              <div className="card-style">
-                <div className="card-header">
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-                </div>
-                <div className="card-content">
+                </CardHeader>
+                <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(stats.totalExpenses)}</div>
-                </div>
-              </div>
-              <div className="card-style">
-                <div className="card-header">
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
-                </div>
-                <div className="card-content">
+                </CardHeader>
+                <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(stats.netProfit)}</div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </TabsContent>
