@@ -52,12 +52,22 @@ export default function CustomersPage() {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/customers?page=${page}&limit=10&search=${search}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch customers');
+      }
       const data = await response.json();
-      setCustomers(data.customers);
-      setTotalPages(data.pagination.pages);
-      setCurrentPage(data.pagination.currentPage);
+      console.log('Customer data:', data);
+      if (data.customers && Array.isArray(data.customers)) {
+        setCustomers(data.customers);
+        setTotalPages(data.pagination.pages);
+        setCurrentPage(data.pagination.currentPage);
+      } else {
+        console.error('Invalid customer data format:', data);
+        setCustomers([]);
+      }
     } catch (error) {
       console.error('Error fetching customers:', error);
+      setCustomers([]);
     } finally {
       setIsLoading(false);
     }

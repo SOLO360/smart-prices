@@ -31,6 +31,9 @@ interface Customer {
   createdAt: string;
   updatedAt: string;
   sales: any[];
+  _count?: {
+    sales: number;
+  };
 }
 
 interface Sale {
@@ -132,12 +135,12 @@ export default function Home() {
 
         setStats({
           totalSales,
-          totalCustomers: Array.isArray(customers) ? customers.length : 0,
+          totalCustomers: customers?.pagination?.total || 0,
           totalExpenses,
           netProfit: totalSales - totalExpenses,
         });
 
-        setCustomers(Array.isArray(customers) ? customers : []);
+        setCustomers(customers?.customers || []);
         setSales(Array.isArray(sales) ? sales : []);
         setExpenses(Array.isArray(expenses) ? expenses : []);
       } catch (error) {
@@ -392,7 +395,7 @@ export default function Home() {
                         <TableCell>{customer.phone || '-'}</TableCell>
                         <TableCell>{customer.company || '-'}</TableCell>
                         <TableCell>{customer.category}</TableCell>
-                        <TableCell>{customer.sales.length}</TableCell>
+                        <TableCell>{customer._count?.sales || 0}</TableCell>
                         <TableCell className="max-w-xs truncate">{customer.address || '-'}</TableCell>
                       </TableRow>
                     ))}
