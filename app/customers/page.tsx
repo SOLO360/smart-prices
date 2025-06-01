@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import CustomerAnalytics from "../components/CustomerAnalytics";
 import { useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -108,10 +107,6 @@ export default function CustomersPage() {
               className="w-64"
             />
           </div>
-        </div>
-
-        <div className="mb-8">
-          <CustomerAnalytics />
         </div>
 
         <div className="bg-white rounded-lg shadow">
