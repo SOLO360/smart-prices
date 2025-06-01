@@ -92,7 +92,7 @@ export async function GET() {
       })),
       topCustomers: topCustomers.map((customer: any) => ({
         name: customer.name,
-        totalSpent: parseFloat(customer.total_spent),
+        totalSales: parseFloat(customer.total_spent),
       })),
       customerRetention: customerRetention.map((item: any) => ({
         month: format(new Date(item.month), 'MMM yyyy'),
