@@ -326,9 +326,16 @@ export function ProductTableClient({ initialProducts, onProductUpdate }: Product
             className="pl-8 max-w-sm border border-gray-300 bg-muted/50 focus-visible:ring-[#17354D]"
           />
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" onClick={() => window.open('/api/products/export?format=pdf', '_blank')}>
+            Export PDF
+          </Button>
+          <Button variant="outline" onClick={() => window.open('/api/products/export?format=excel', '_blank')}>
+            Export Excel
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
               Columns <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
